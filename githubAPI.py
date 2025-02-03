@@ -2,6 +2,20 @@ import requests
 import base64
 import chardet
 
+# Summary class to keep track of data about repo processing
+class Summary:
+    def __init__(self):
+        self.processed_files_count = 0
+        self.skipped_files_count = 0
+        self.skipped_files_reasons = []
+
+    def increment_processed(self):
+        self.processed_files_count += 1
+
+    def increment_skipped(self, reason):
+        self.skipped_files_count += 1
+        self.skipped_files_reasons.append(reason)
+
 def parse_url(repo_url):
     return repo_url.rstrip('/').split('/')[-2:]
 
@@ -23,7 +37,7 @@ def check_response_code(response, repo_name, token=None):
     else:
         return True
 
-def fetch_file_content(owner, repo_name, file_path, token=None):
+def fetch_file_content(summary, owner, repo_name, file_path, token=None):
     # Fetch the content of a file in the GitHub repo
     api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}'
 
@@ -36,6 +50,7 @@ def fetch_file_content(owner, repo_name, file_path, token=None):
 
     # end function if request is unsuccessful
     if not check_response_code(response, repo_name, token):
+        summary.increment_skipped(f"Error {response.status_code}: {response.text}")
         return None
     
     file_data = response.json()
@@ -51,21 +66,21 @@ def fetch_file_content(owner, repo_name, file_path, token=None):
             decoded_content = content.decode('utf-8')
             return decoded_content
         except UnicodeDecodeError:
-            print(f"Error decoding {file_path}: Content isn't valid UTF-8")
+            summary.increment_skipped(f"Error decoding {file_path}: Content isn't valid UTF-8")
             return None
     else:
-        print(f"Skipping {file_path}: Detected encoding is {detected_encoding}")
+        summary.increment_skipped(f"Skipping {file_path}: Detected encoding is {detected_encoding}")
         return None
 
-def fetch_repo_content(repo_url, token=None):
+def fetch_repo_content(summary, repo_url, token=None):
     # Extract repo owner and name from URL (user/repo-name)
     repo_parts = parse_url(repo_url)
     owner, repo_name = repo_parts[0], repo_parts[1]
 
-    return process_directory(owner, repo_name, '', token)
+    return process_directory(summary, owner, repo_name, '', token)
 
 
-def process_directory(owner, repo_name, directory_path, token=None):
+def process_directory(summary, owner, repo_name, directory_path, token=None):
 
     # GitHub API endpoint to fetch the repository contents
     api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents{directory_path}'
@@ -73,6 +88,7 @@ def process_directory(owner, repo_name, directory_path, token=None):
 
     # end function if request is unsuccessful
     if not check_response_code(response, repo_name, token):
+        summary.increment_skipped(f"Error {response.status_code}: {response.text}")
         return None
 
     contents = response.json()
@@ -80,22 +96,32 @@ def process_directory(owner, repo_name, directory_path, token=None):
 
     for item in contents:
         if item['type'] == 'file':
-            file_content = fetch_file_content(owner, repo_name, item['path'])
+            file_content = fetch_file_content(summary, owner, repo_name, item['path'])
             if file_content:
                 repo_data[item['path']] = file_content
         elif item['type'] == 'dir':
             # Recursively process subdirectories
-            repo_data[item['path']] = process_directory(owner, repo_name, item['path'])
+            repo_data[item['path']] = process_directory(summary, owner, repo_name, item['path'])
 
     return repo_data
 
-
+def generate_summary(summary):
+    print(f"Total files processed: {summary.processed_files_count}")
+    print(f"Total files skipped: {summary.skipped_files_count}")
+    if summary.skipped_files_count > 0:
+        print("Reasons for skipped files:")
+        for reason in summary.skipped_files_reasons:
+            print(f"- {reason}")
 
 def main():
     repo_url = input("Enter the Github repo url: ")
     token = input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
-    repo_content = fetch_repo_content(repo_url, token.strip() if token else None)
+    summary = Summary()
+
+    repo_content = fetch_repo_content(summary, repo_url, token.strip() if token else None)
+
+    generate_summary(summary)
 
     if(repo_content):
         print("Success")
