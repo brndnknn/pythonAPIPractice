@@ -5,7 +5,7 @@ import chardet
 def parse_url(repo_url):
     return repo_url.rstrip('/').split('/')[-2:]
 
-def check_response_code(response, repo_name, token):
+def check_response_code(response, repo_name, token=None):
     # check response code and respond accordingly
     # 401 (unauthorized) or 403 (Forbidden)
     if response.status_code in [401, 403]:
@@ -69,7 +69,7 @@ def process_directory(owner, repo_name, directory_path, token=None):
 
     # GitHub API endpoint to fetch the repository contents
     api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents{directory_path}'
-    response = requests.get(api_url)
+    response = requests.get(api_url, token)
 
     # end function if request is unsuccessful
     if not check_response_code(response, repo_name, token):
@@ -91,7 +91,16 @@ def process_directory(owner, repo_name, directory_path, token=None):
 
 
 
+def main():
+    repo_url = input("Enter the Github repo url: ")
+    token = input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
-repo_url = 'https://github.com/brndnknn/project-pixel'
-repo_content = fetch_repo_content(repo_url)
-print(repo_content)
+    repo_content = fetch_repo_content(repo_url, token.strip() if token else None)
+
+    if(repo_content):
+        print("Success")
+    else:
+        print("Failure")
+
+if __name__ == "__main__":
+    main()
