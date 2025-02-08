@@ -139,12 +139,12 @@ def fetch_file_content(summary, owner, repo_name, file_path, branch="main", toke
         )
         return None
 
-def fetch_repo_content(summary, repo_url, token=None):
+def fetch_repo_content(summary, repo_url, branch="main", token=None):
     # Extract repo owner and name from URL (user/repo-name)
     repo_parts = parse_url(repo_url)
     owner, repo_name = repo_parts[0], repo_parts[1]
 
-    return process_directory(summary, owner, repo_name, '', token)
+    return process_directory(summary, owner, repo_name, '', branch, token)
 
 
 def process_directory(summary, owner, repo_name, directory_path, branch="main", token=None):
