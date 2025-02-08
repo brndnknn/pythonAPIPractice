@@ -86,9 +86,9 @@ def check_response_code(response, repo_name, token=None):
     else:
         return True
 
-def fetch_file_content(summary, owner, repo_name, file_path, token=None):
+def fetch_file_content(summary, owner, repo_name, file_path, branch="main", token=None):
     # Fetch the content of a file in the GitHub repo
-    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
+    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}?ref={branch}"
 
     # try to fetch with token if given, without if it isn't
     headers = {}
@@ -147,10 +147,10 @@ def fetch_repo_content(summary, repo_url, token=None):
     return process_directory(summary, owner, repo_name, '', token)
 
 
-def process_directory(summary, owner, repo_name, directory_path, token=None):
+def process_directory(summary, owner, repo_name, directory_path, branch="main", token=None):
 
     # GitHub API endpoint to fetch the repository contents
-    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents{directory_path}"
+    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents{directory_path}?ref={branch}"
     response = requests.get(api_url, token)
 
     # end function if request is unsuccessful
@@ -167,9 +167,9 @@ def process_directory(summary, owner, repo_name, directory_path, token=None):
 
     for item in contents:
         if item['type'] == 'file':
-            fetch_file_content(summary, owner, repo_name, item['path'])
+            fetch_file_content(summary, owner, repo_name, item['path'], branch, token)
         elif item['type'] == 'dir':
-            process_directory(summary, owner, repo_name, item['path'])
+            process_directory(summary, owner, repo_name, item['path'], branch, token)
         directory_data[item['path']] = item['type']
     return None
 
@@ -177,11 +177,12 @@ def process_directory(summary, owner, repo_name, directory_path, token=None):
 def main():
 
     repo_url = input("Enter the Github repo url: ")
+    branch = input("Enter the branch name (default is 'main'): ").strip() or "main"
     token = input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
     summary = Summary()
 
-    fetch_repo_content(summary, repo_url, token.strip() if token else None)
+    fetch_repo_content(summary, repo_url, branch, token.strip() if token else None)
 
     output_file_path = "repo_output.json"
 
