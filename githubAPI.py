@@ -3,6 +3,7 @@ import base64
 import chardet
 import json
 import logging
+import re
 
 # Configure logging
 logging.basicConfig(
@@ -52,12 +53,14 @@ class Summary:
     def get_files(self):
         return self.files
         
-    def print_summary(self):
+    def print_summary(self, branch):
 
-        data = {}
-        data["Repo Summary"] = self.get_repo_summary()
-        data["Directory Structure"] = self.get_directory_structure()
-        data["Files"] = self.get_files()
+        data = {
+        "Repo Summary": self.get_repo_summary(),
+        "Branch": branch,
+        "Directory Structure": self.get_directory_structure(),
+        "Files": self.get_files()
+        }
 
         return data
 
@@ -184,9 +187,10 @@ def main():
 
     fetch_repo_content(summary, repo_url, branch, token.strip() if token else None)
 
-    output_file_path = "repo_output.json"
+    safe_branch = re.sub(r'[\/:*?"<>|]', '_', branch)
+    output_file_path = f"repo_output_{safe_branch}.json"
 
-    data = summary.print_summary()
+    data = summary.print_summary(branch)
 
     with open(output_file_path, "w") as json_file:
         json.dump(data, json_file, indent=4, ensure_ascii=True)
