@@ -2,6 +2,15 @@ import requests
 import base64
 import chardet
 import json
+import logging
+
+# Configure logging
+logging.basicConfig(
+    filename="app.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s -  %(message)s",
+    level=logging.INFO
+)
 
 # Summary class to keep track of data about repo processing
 class Summary:
@@ -65,14 +74,14 @@ def check_response_code(response, repo_name, token=None):
     if response.status_code in [401, 403]:
         if not token:
             # if no token was given, ask for one
-            print(f"Error: Repository '{repo_name}' is private. Authentication token required.")
+            logging.error(f"Error: Repository '{repo_name}' is private. Authentication token required.")
             return False
         else:
             # if invalid token was given, ask for a new one
-            print(f"Error: Invalid token or permission issue for '{repo_name}'.")
+            logging.error(f"Error: Invalid token or permission issue for '{repo_name}'.")
             return False
     elif response.status_code != 200:
-        print(f"Error {response.status_code}: {response.text}")
+        logging.error(f"Error {response.status_code}: {response.text}")
         return False
     else:
         return True
