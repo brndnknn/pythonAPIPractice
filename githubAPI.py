@@ -5,6 +5,8 @@ import json
 import logging
 import re
 import os
+import sys
+
 
 # Configure logging
 logging.basicConfig(
@@ -181,7 +183,13 @@ def process_directory(summary, owner, repo_name, directory_path, branch="main", 
 def main():
 
     repo_url = os.getenv("GITHUB_REPO") or input("Enter the Github repo url: ")
-    branch = input("Enter the branch name (default is 'main'): ").strip() or "main"
+
+    # If a branch is passed as an argument, use it
+    if len(sys.argv) > 1:
+        branch = sys.argv[1]
+    else:
+        branch = input("Enter the branch name (default is 'main'): ").strip() or "main"
+
     token = os.getenv("GITHUB_TOKEN") or input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
     summary = Summary()
