@@ -4,6 +4,7 @@ import chardet
 import json
 import logging
 import re
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -179,9 +180,9 @@ def process_directory(summary, owner, repo_name, directory_path, branch="main", 
 
 def main():
 
-    repo_url = input("Enter the Github repo url: ")
+    repo_url = os.getenv("GITHUB_REPO") or input("Enter the Github repo url: ")
     branch = input("Enter the branch name (default is 'main'): ").strip() or "main"
-    token = input("Enter the GitHub authentication token (optional, press Enter to skip): ")
+    token = os.getenv("GITHUB_TOKEN") or input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
     summary = Summary()
 
