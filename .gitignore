@@ -1,2 +1,8 @@
+# files created each time the script runs
 *.json
 *.log
+
+# python compile files
+__pycache__/
+*.pyc
+
