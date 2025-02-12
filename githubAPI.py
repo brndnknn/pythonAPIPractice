@@ -7,6 +7,8 @@ import re
 import os
 import sys
 from summary import Summary
+from utils import parse_url
+from utils import decode_file_content
 
 
 # Configure logging
@@ -18,8 +20,7 @@ logging.basicConfig(
 )
         
 
-def parse_url(repo_url):
-    return repo_url.rstrip('/').split('/')[-2:]
+
 
 def check_response_code(response, repo_name, token=None):
     # check response code and respond accordingly
@@ -60,37 +61,12 @@ def fetch_file_content(summary, owner, repo_name, file_path, branch="main", toke
         return None
     
     file_data = response.json()
-    # get file content
-    content = base64.b64decode(file_data['content'])
 
-    # decect encoding
-    detected_encoding = chardet.detect(content)['encoding']
-
-    if detected_encoding in ['utf-8', 'ascii']:
-        # decode the content only if it's utf-8
-        try:
-            decoded_content = content.decode('utf-8')
-            
-            summary.process_file(
-                (f"{repo_name}/{file_path}"),
-                'processed',
-                (f"{decoded_content}")
-            )
-            return None
-        except UnicodeDecodeError:
-            summary.process_file(
-                (f"{repo_name}/{file_path}"),
-                'skipped',
-                (f"Error decoding {file_path}: Content isn't valid UTF-8")
-            )
-            return None
-    else:
-        summary.process_file(
-            (f"{repo_name}/{file_path}"),
-            'skipped',
-            (f"Skipping {file_path}: Detected encoding is {detected_encoding}")
-        )
-        return None
+    status, content = decode_file_content(file_data)
+    summary.process_file(
+        (f"{repo_name}/{file_path}"),
+        status, content
+    )
 
 def fetch_repo_content(summary, repo_url, branch="main", token=None):
     # Extract repo owner and name from URL (user/repo-name)
