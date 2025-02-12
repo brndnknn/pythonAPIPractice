@@ -1,12 +1,11 @@
 import requests
-import base64
-import chardet
 import json
 import logging
 import re
 import os
 import sys
 from summary import Summary
+from api_requests import GithubAPI
 from utils import parse_url
 from utils import decode_file_content
 
@@ -18,90 +17,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s -  %(message)s",
     level=logging.INFO
 )
-        
-
-
-
-def check_response_code(response, repo_name, token=None):
-    # check response code and respond accordingly
-    # 401 (unauthorized) or 403 (Forbidden)
-    if response.status_code in [401, 403]:
-        if not token:
-            # if no token was given, ask for one
-            logging.error(f"Error: Repository '{repo_name}' is private. Authentication token required.")
-            return False
-        else:
-            # if invalid token was given, ask for a new one
-            logging.error(f"Error: Invalid token or permission issue for '{repo_name}'.")
-            return False
-    elif response.status_code != 200:
-        logging.error(f"Error {response.status_code}: {response.text}")
-        return False
-    else:
-        return True
-
-def fetch_file_content(summary, owner, repo_name, file_path, branch="main", token=None):
-    # Fetch the content of a file in the GitHub repo
-    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}?ref={branch}"
-
-    # try to fetch with token if given, without if it isn't
-    headers = {}
-    if token:
-        headers['Authorization'] = f"token {token}"
-    response = requests.get(api_url, headers=headers)
-
-
-    # end function if request is unsuccessful
-    if not check_response_code(response, repo_name, token):
-        summary.process_file( 
-            (f'{repo_name}/{file_path}'), 
-            'skipped',
-            (f"Error {response.status_code}: {response.text}")
-            )
-        return None
-    
-    file_data = response.json()
-
-    status, content = decode_file_content(file_data)
-    summary.process_file(
-        (f"{repo_name}/{file_path}"),
-        status, content
-    )
-
-def fetch_repo_content(summary, repo_url, branch="main", token=None):
-    # Extract repo owner and name from URL (user/repo-name)
-    repo_parts = parse_url(repo_url)
-    owner, repo_name = repo_parts[0], repo_parts[1]
-
-    return process_directory(summary, owner, repo_name, '', branch, token)
-
-
-def process_directory(summary, owner, repo_name, directory_path, branch="main", token=None):
-
-    # GitHub API endpoint to fetch the repository contents
-    api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents{directory_path}?ref={branch}"
-    response = requests.get(api_url, token)
-
-    # end function if request is unsuccessful
-    if not check_response_code(response, repo_name, token):
-        summary.process_file( 
-            (f'{repo_name}/{directory_path}'), 
-            'skipped',
-            (f"Error {response.status_code}: {response.text}")
-            )
-        return None
-
-    contents = response.json()
-    directory_data = {}
-
-    for item in contents:
-        if item['type'] == 'file':
-            fetch_file_content(summary, owner, repo_name, item['path'], branch, token)
-        elif item['type'] == 'dir':
-            process_directory(summary, owner, repo_name, item['path'], branch, token)
-        directory_data[item['path']] = item['type']
-    return None
-
 
 def main():
 
@@ -115,9 +30,12 @@ def main():
 
     token = os.getenv("GITHUB_TOKEN") or input("Enter the GitHub authentication token (optional, press Enter to skip): ")
 
+    
+
+    github_api = GithubAPI(repo_url, token, branch)
     summary = Summary()
 
-    fetch_repo_content(summary, repo_url, branch, token.strip() if token else None)
+    github_api.fetch_repo_content(summary)
 
     safe_branch = re.sub(r'[\/:*?"<>|]', '_', branch)
     output_file_path = f"repo_output_{safe_branch}.json"
