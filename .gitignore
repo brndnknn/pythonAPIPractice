@@ -1,8 +1,8 @@
-# files created each time the script runs
-*.json
-*.log
 
 # python compile files
 __pycache__/
 *.pyc
 
+# directories that hold files created when the script runs
+output/
+logs/ 
