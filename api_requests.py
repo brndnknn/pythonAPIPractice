@@ -1,12 +1,11 @@
 import requests
 import time
-from utils import parse_url
-from utils import decode_file_content
+import utils
 
 
 class GithubAPI:
     def __init__(self, repo_url, logger, token=None, branch="main"):
-        self.repo_owner, self.repo_name = parse_url(repo_url)
+        self.repo_owner, self.repo_name = utils.parse_url(repo_url)
         self.repo_url = repo_url
         self.token = token
         self.branch = branch
@@ -66,9 +65,14 @@ class GithubAPI:
             return None
         
         file_data = response.json()
-        
-        self.logger.info(f"Decoding file: {file_path}")
-        status, content = decode_file_content(file_data)
+
+        if utils.is_config_file(file_path):
+            self.logger.info(f"Summarizing config file: {file_path}")
+            status, content = utils.summarize_config(file_data, file_path)
+            
+        else:
+            self.logger.info(f"Decoding file: {file_path}")
+            status, content = utils.decode_file_content(file_data)
         summary.process_file(
             (f"{self.repo_name}/{file_path}"),
             status, content
