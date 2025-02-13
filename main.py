@@ -1,4 +1,3 @@
-import requests
 import json
 import logging
 import re
@@ -6,17 +5,9 @@ import os
 import sys
 from summary import Summary
 from api_requests import GithubAPI
-from utils import parse_url
-from utils import decode_file_content
 
 
-# Configure logging
-logging.basicConfig(
-    filename="app.log",
-    filemode="w",
-    format="%(asctime)s - %(levelname)s -  %(message)s",
-    level=logging.INFO
-)
+
 
 def main():
 
