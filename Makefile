@@ -1,6 +1,6 @@
 # Define variables
 PYTHON = python 
-SCRIPT = githubAPI.py
+SCRIPT = main.py
 OUTPUT = repo_output_*.json
 LOGS = *.log
 
@@ -28,3 +28,4 @@ run-branch:
 clean:
 	@echo "Cleaning up JSON and log files..."
 	rm -f $(OUTPUT) $(LOGS)
+	rm -rf __pycache__/
