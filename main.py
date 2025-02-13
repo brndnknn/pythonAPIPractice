@@ -20,7 +20,7 @@ def main():
     else:
         branch = input("Enter the branch name (default is 'main'): ").strip() or "main"
 
-    token = os.getenv("GITHUB_TOKEN") or input("Enter the GitHub authentication token (optional, press Enter to skip): ")
+    token = os.getenv("GITHUB_TOKEN")
 
     repo_name = parse_url(repo_url)[1]
     os.makedirs(f"output/{repo_name}", exist_ok=True)
