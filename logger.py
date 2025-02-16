@@ -10,15 +10,20 @@ def setup_logger(repo_name, branch):
     log_file = os.path.join(log_dir, f"{repo_name}_{branch}.log")
 
     # Configure logging
-    logging.basicConfig(
-        filename=log_file,
-        filemode="a",
-        format="%(asctime)s - %(levelname)s -  %(message)s",
-        level=logging.INFO
-    )
-
-    # create a logger instance
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    # File handler
+    file_handler = logging.FileHandler(log_file, mode="a")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
 
     # Add a separator line at the start of each script execution
     logger.info("\n" + "-" * 50 + "\nStarting run....\n" + "-" * 50)
