@@ -16,6 +16,7 @@ This Python script interacts with the GitHub API to retrieve repository contents
   - Repository summary.
   - Directory structure.
   - Processed file contents.
+- Specify a subdirectory to limit processing to only relevant files.
 
 ## Directory Structure
 ```
@@ -62,6 +63,21 @@ To run for a specific branch:
 ```sh
 make run-branch repo=username/repository
 ```
+### Fetching Only a Specific Subdirectory
+
+If you only want to process a subdirectory of a repository (e.g., just the frontend/ folder), specify it in the URL:
+
+**Option 1: Full GitHub URL Format**
+```sh
+https://github.com/user/repo/tree/main/frontend
+```
+**Option 2: Shorthand Format**
+```sh
+user/repo/frontend
+```
+
+The script will detect the subdirectory and treat it as the root directory for processing.
+
 
 ## Output
 The script generates a `repo_output.json` file containing:
