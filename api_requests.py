@@ -5,7 +5,7 @@ import utils
 
 class GithubAPI:
     def __init__(self, repo_url, logger, token=None, branch="main"):
-        self.repo_owner, self.repo_name = utils.parse_url(repo_url)
+        self.repo_owner, self.repo_name, self.directory = utils.parse_url(repo_url)
         self.repo_url = repo_url
         self.token = token
         self.branch = branch
@@ -16,7 +16,7 @@ class GithubAPI:
         self.logger.info(f"Fetching repo content from {self.repo_url}")
 
         start_time = time.time()
-        self.process_directory(summary, '')
+        self.process_directory(summary, self.directory)
         elapsed_time = time.time() - start_time
 
         self.logger.info(f"Content processed in {elapsed_time: 2f} seconds")

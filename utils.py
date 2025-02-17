@@ -8,7 +8,21 @@ import configparser
 # Utility functions
 
 def parse_url(repo_url):
-    return repo_url.rstrip('/').split('/')[-2:]
+    # check for 'https://github.com/' and strip it out if it exists
+    repo_url = repo_url.removeprefix('https://github.com/')
+
+    # split string into list and assign to new variables
+    repo_url = repo_url.rstrip('/').split('/')
+    owner, repo, *path_parts = repo_url
+
+    # check for and handle "https://github.com/user/repo/tree/main/directory/subdirectory" formats
+    if(path_parts and (path_parts[0] == 'tree')):
+        path_parts = path_parts[2:]
+
+    # combine any remaining pathparts into directory path
+    directory = "/".join(path_parts)
+
+    return owner, repo, directory
 
 
 # returns status, content

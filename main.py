@@ -22,7 +22,7 @@ def main():
 
     token = os.getenv("GITHUB_TOKEN")
 
-    repo_name = parse_url(repo_url)[1]
+    repo_name, directory_path = parse_url(repo_url)[1:]
     os.makedirs(f"output/{repo_name}", exist_ok=True)
     logger = setup_logger(repo_name, branch)
 
@@ -34,7 +34,8 @@ def main():
     github_api.fetch_repo_content(summary)
 
     safe_branch = re.sub(r'[\/:*?"<>|]', '_', branch)
-    output_file_path = f"output/{repo_name}/repo_output_{safe_branch}.json"
+    safe_path = re.sub(r'[\/:*?"<>|]', '_', directory_path)
+    output_file_path = f"output/{repo_name}/{safe_path if safe_path else 'root'}_repo_output_{safe_branch}.json"
 
     data = summary.print_summary(branch)
 
