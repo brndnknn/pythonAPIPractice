@@ -1,8 +1,15 @@
 import requests
+import json
 
 def get_random_joke():
-    """Fetch a random Chuck Norris joke from the API."""
-    pass  # TODO: Implement API call and return joke
+    # Fetch a random Chuck Norris joke from the API.
+    api_url = "https://api.chucknorris.io/jokes/random"
+    request = requests.get(api_url)
+    raw_content = json.loads(request.text)
+    joke = raw_content['value']
+
+    print()
+    print(joke)
 
 def get_categories():
     """Fetch available joke categories."""
@@ -28,7 +35,7 @@ def main():
         choice = input(">> ")
         
         if choice == "1":
-            pass  # TODO: Call function to get and display a random joke
+            get_random_joke()
         elif choice == "2":
             pass  # TODO: Call function to fetch a joke by category
         elif choice == "3":
