@@ -1,4 +1,34 @@
 import requests
+import json
+
+def poke_parser(api_results):
+    """
+    Parse data from api results
+    :param api_results: dict - the raw json data returned by the api request
+    : return: dict - cleaned up data form api response
+    """
+    # handle simpler data
+    keys = ['name', 'abilities', 'types']
+    poke_data = {}
+    for k in keys:
+        poke_data[k] = api_results[k]
+
+    # simplify stats
+    poke_data['stats'] = {}
+    stats = api_results['stats']
+    for stat in stats:
+        name = stat['stat']['name']
+        poke_data['stats'][name] = stat['base_stat']
+
+    # only keep main sprites
+    poke_data['sprites'] = {}
+    sprites = api_results['sprites']
+    for s in sprites:
+        if type(sprites[s]) != dict:
+            poke_data['sprites'][s] = sprites[s]
+    
+    return poke_data
+
 
 def get_pokemon_data(pokemon_name_or_id):
     """
@@ -6,14 +36,18 @@ def get_pokemon_data(pokemon_name_or_id):
     :param pokemon_name_or_id: str or int - Name or ID of the Pokémon
     :return: dict - Pokémon data (to be implemented)
     """
-    pass  # TODO: Implement API call and data extraction
+    api_url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name_or_id}"
+    results = requests.get(api_url).json()
+
+    return poke_parser(results)
 
 def display_pokemon_info(pokemon_data):
     """
     Format and display Pokémon details.
     :param pokemon_data: dict - Pokémon API response
     """
-    pass  # TODO: Implement display logic
+    for i in pokemon_data:
+        print(f"{i}: {pokemon_data[i]}")
 
 def main():
     """
