@@ -5,29 +5,13 @@ The Chuck Norris Joke Machine is a simple Python-based command-line application 
 - Get a random joke
 - Fetch jokes from a specific category
 - View available joke categories
-- Save jokes for later enjoyment
 
 ## Features
 ✅ Fetch random Chuck Norris jokes
 ✅ Browse joke categories
 ✅ Retrieve jokes from a specific category
-✅ Save favorite jokes to a local file
 ✅ Simple CLI interface
 
-## Installation
-1. Clone this repository:
-   ```sh
-   git clone https://github.com/yourusername/chuck-norris-joke-machine.git
-   cd chuck-norris-joke-machine
-   ```
-2. Install dependencies:
-   ```sh
-   pip install requests
-   ```
-3. Run the script:
-   ```sh
-   python joke_machine.py
-   ```
 
 ## API Used
 - **Chuck Norris API:** [https://api.chucknorris.io/](https://api.chucknorris.io/)
