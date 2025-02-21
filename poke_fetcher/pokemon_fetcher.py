@@ -1,5 +1,7 @@
 import requests
-import json
+import os
+from rich.console import Console
+from rich.text import Text
 
 def poke_parser(api_results):
     """
@@ -24,8 +26,8 @@ def poke_parser(api_results):
     poke_data['sprites'] = {}
     sprites = api_results['sprites']
     for s in sprites:
-        if type(sprites[s]) != dict:
-            poke_data['sprites'][s] = sprites[s]
+        #if type(sprites[s]) != dict:
+        poke_data['sprites'][s] = sprites[s]
     
     return poke_data
 
@@ -46,8 +48,43 @@ def display_pokemon_info(pokemon_data):
     Format and display Pokémon details.
     :param pokemon_data: dict - Pokémon API response
     """
-    for i in pokemon_data:
-        print(f"{i}: {pokemon_data[i]}")
+    print("\n=== Pokémon Info ===\n")
+    
+    # Name
+    print(f"Name: {pokemon_data['name'].capitalize()}\n")
+    
+    # Types
+    types = [t['type']['name'].capitalize() for t in pokemon_data['types']]
+    print(f"Type(s): {', '.join(types)}\n")
+    
+    # Abilities
+    print("Abilities:")
+    for ability in pokemon_data['abilities']:
+        ability_name = ability['ability']['name'].capitalize()
+        is_hidden = " (Hidden)" if ability['is_hidden'] else ""
+        print(f"  - {ability_name}{is_hidden}")
+    print()
+    
+    # Stats
+    print("Base Stats:")
+    for stat_name, stat_value in pokemon_data['stats'].items():
+        formatted_stat = stat_name.replace('-', ' ').title()
+        print(f"  {formatted_stat:<15} {stat_value}")
+    print()
+    
+    # Sprite (ASCII Art)
+    sprite_url = pokemon_data['sprites'].get('other', {}).get('official-artwork', {}).get('front_default', '')
+    if sprite_url and sprite_url.startswith("http"):
+        response = requests.get(sprite_url)
+        if response.status_code == 200:
+            with open("sprite.png", "wb") as f:
+                f.write(response.content)
+            os.system("img2txt sprite.png")  # Convert image to ASCII
+        else:
+            print("Failed to load sprite.")
+    else:
+        print("No valid sprite available.")
+
 
 def main():
     """
