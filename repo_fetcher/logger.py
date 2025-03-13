@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 
 def setup_logger(repo_name, branch):
@@ -7,7 +8,9 @@ def setup_logger(repo_name, branch):
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
 
-    log_file = os.path.join(log_dir, f"{repo_name}_{branch}.log")
+    safe_branch = re.sub(r'[\/:*?"<>|]', '_', branch)
+
+    log_file = os.path.join(log_dir, f"{repo_name}_{safe_branch}.log")
 
     # Configure logging
     logger = logging.getLogger(__name__)
