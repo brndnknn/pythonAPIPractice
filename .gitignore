@@ -10,3 +10,7 @@ logs/
 # config files
 .env
 .DS_Store
+
+# virtual environments
+*/venv/
+
